@@ -14,7 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=r'C:\Users\kaeli\OneDrive\Documents\GitHub\AutoMl-Gr1\.env')
+load_dotenv()
 
 MONGO_CONFIG = {
     "DB_NAME": os.getenv("MONGO_DB_NAME"),
