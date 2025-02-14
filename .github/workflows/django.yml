@@ -34,8 +34,9 @@ jobs:
 
       - name: Start PostgreSQL and MongoDB with Docker Compose
         run: |
-          # Lancer les services via Docker Compose
-          docker-compose up -d
+          cd autoML  # Aller dans le bon répertoire
+          docker-compose up -d --build
+          docker-compose ps
 
       - name: Wait for PostgreSQL to be ready
         run: |
@@ -57,12 +58,6 @@ jobs:
             echo "Waiting for MongoDB..."
             sleep 2
           done
-      - name: Démarrer Docker Compose
-        run: |
-          cd autoML  # Aller dans le bon répertoire
-          docker-compose up -d --build
-          docker-compose ps  # Vérifier si les conteneurs tournent
-
         
       - name: Exécuter les migrations
         run: |
