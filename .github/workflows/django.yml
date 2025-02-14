@@ -86,11 +86,9 @@ jobs:
         run: |
           cd autoML
           docker-compose logs postgres
-      - name: Check MongoDB logs
+      - name: List tables in PostgreSQL
         run: |
-          cd autoML 
-          docker-compose logs mongodb
-
+          docker-compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c '\dt'
 
       - name: Run Django Tests (Example)
         run: |
