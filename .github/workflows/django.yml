@@ -79,11 +79,11 @@ jobs:
         run: |
           cd autoML
           docker-compose logs postgres
+
       - name: List tables in PostgreSQL
         run: |
           cd autoML
           docker-compose exec -T postgres bash -c "PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB -p $POSTGRES_PORT -c '\dt'"
-
 
       - name: Run Django Tests (Example)
         run: |
