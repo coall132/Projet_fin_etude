@@ -23,7 +23,6 @@ services:
       - mongodb-data:/data/db
   web:
     build: .
-    container_name: django_web
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
