@@ -27,7 +27,7 @@ services:
       NAME_PG: ${POSTGRES_DB}
       USER_PG: ${POSTGRES_USER}
       PASSWORD_PG: ${POSTGRES_PASSWORD}
-      HOST_PG: ${POSTGRES_HOST}
+      HOST_PG: postgres
       PORT_PG: ${POSTGRES_PORT}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASS: ${MONGO_PASS}
