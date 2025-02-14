@@ -97,7 +97,4 @@ jobs:
           cd autoML 
           docker-compose exec web python manage.py test
 
-      - name: Arrêter Docker Compose
-        run: |
-          cd autoML
-          docker-compose down
+    
