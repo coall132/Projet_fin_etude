@@ -100,5 +100,10 @@ jobs:
       - name: Access the site and perform tests (Example)
         run: |
           curl -s localhost:8000  # Check if site is up
+      
+      - name: Arréter docker compose
+        run : |
+          cd autoML
+          docker-compose down
 
     
