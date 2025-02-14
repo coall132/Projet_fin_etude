@@ -83,7 +83,7 @@ jobs:
           docker-compose run web python manage.py migrate
 
       - name: Check PostgreSQL logs
-        run: docker-compose logs postgres
+        run: docker-compose logs app/postgres
       - name: Check MongoDB logs
         run: docker-compose logs mongodb
 
