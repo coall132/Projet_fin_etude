@@ -26,13 +26,6 @@ jobs:
       MONGO_DB_NAME: ${{ secrets.MONGO_DB_NAME }}
       MONGO_HOST: ${{ secrets.MONGO_HOST }}
       MONGO_PORT: ${{ secrets.MONGO_PORT }}
-      NAME_PG: ${{ secrets.POSTGRES_DB }}
-      USER_PG: ${{ secrets.POSTGRES_USER }}
-      PASSWORD_PG: ${{ secrets.POSTGRES_PASSWORD }}
-      HOST_PG: postgres
-      PORT_PG: ${{ secrets.MONGO_PORT }}
-
-
 
     steps:
       - name: Check out code

@@ -94,11 +94,11 @@ WSGI_APPLICATION = 'autoML.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("NAME_PG"),
-        'USER': os.getenv("USER_PG"),
-        'PASSWORD': os.getenv("PASSWORD_PG"),
-        'HOST': os.getenv("HOST_PG"),
-        'PORT': int(os.getenv("PORT_PG", 5432)),
+        'NAME': os.getenv("POSTGRES_DB"),
+        'USER': os.getenv("POSTGRES_USER"),
+        'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+        'HOST': os.getenv("POSTGRES_HOST"),
+        'PORT': int(os.getenv("POSTGRES_PORT", 5432)),
         'OPTIONS': {
             'options': '-c search_path=user_data_schema,public',
         },
