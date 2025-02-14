@@ -1,9 +1,14 @@
+
+
 name: Django CI
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
   workflow_dispatch:
 
 jobs:
@@ -21,15 +26,16 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Start PostgreSQL
+      - name: Set up Docker Compose
         run: |
-          docker run -d \
-            --name postgres \
-            -e POSTGRES_DB=$POSTGRES_DB \
-            -e POSTGRES_USER=$POSTGRES_USER \
-            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-            -p 5432:5432 \
-            postgres:13
+          # Installer Docker Compose si non installé
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Start PostgreSQL and MongoDB with Docker Compose
+        run: |
+          # Lancer les services via Docker Compose
+          docker-compose up -d
 
       - name: Wait for PostgreSQL to be ready
         run: |
@@ -37,15 +43,6 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
-
-      - name: Start MongoDB
-        run: |
-          docker run -d \
-            --name mongodb \
-            -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USER \
-            -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASS \
-            -p 27017:27017 \
-            mongo:latest
       
       - name: Install MongoDB Shell (mongosh)
         run: |
@@ -54,10 +51,13 @@ jobs:
           sudo apt update
           sudo apt install -y mongodb-mongosh
 
-
       - name: Wait for MongoDB to be ready
         run: |
           until mongosh --host localhost --port 27017 -u $MONGO_USER -p $MONGO_PASS --authenticationDatabase admin --eval 'db.adminCommand("ping")'; do
             echo "Waiting for MongoDB..."
             sleep 2
           done
+
+      - name: Run Django Tests (Example)
+        run: |
+          docker-compose exec web python manage.py test
