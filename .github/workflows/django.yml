@@ -21,12 +21,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Debug environment variables
-        run: |
-          echo "PostgreSQL Database: $POSTGRES_DB"
-          echo "PostgreSQL User: $POSTGRES_USER"
-          echo "MongoDB User: $MONGO_USER"
-
       - name: Start PostgreSQL
         run: |
           docker run -d \
