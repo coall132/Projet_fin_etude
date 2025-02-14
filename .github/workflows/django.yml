@@ -83,13 +83,18 @@ jobs:
           docker-compose run web python manage.py migrate
 
       - name: Check PostgreSQL logs
-        run: docker-compose logs app/postgres
+        run: |
+          cd autoML
+          docker-compose logs postgres
       - name: Check MongoDB logs
-        run: docker-compose logs mongodb
+        run: |
+          cd autoML 
+          docker-compose logs mongodb
 
 
       - name: Run Django Tests (Example)
         run: |
+          cd autoML 
           docker-compose exec web python manage.py test
 
       - name: Arrêter Docker Compose
