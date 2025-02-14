@@ -16,54 +16,43 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       MONGO_USER: ${{ secrets.MONGO_USER }}
       MONGO_PASS: ${{ secrets.MONGO_PASS }}
-      MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USER }}
-      MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASS }}
 
     services:
       postgres:
         image: postgres:13
-        env:
-          POSTGRES_DB: $POSTGRES_DB
-          POSTGRES_USER: $POSTGRES_USER
-          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
         ports:
           - 5432:5432
-        options: --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB " --health-timeout=30s --health-interval=5s --health-retries=3
+        options: >-
+          --env POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          --env POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          --env POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}"
+          --health-timeout=30s --health-interval=5s --health-retries=3
 
       mongodb:
         image: mongo:latest
         ports:
           - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
-          MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
-        options: --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'" --health-timeout=30s --health-interval=5s --health-retries=3
+        options: >-
+          --env MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }}
+          --env MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASS }}
+          --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-timeout=30s --health-interval=5s --health-retries=3
 
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      
-      - name: Set up Django environment
-        run: |
-          export DJANGO_SETTINGS_MODULE=autoML_final.settings
-          export DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
-          export MONGO_DB_URI=mongodb://$MONGO_USER:$MONGO_PASS@$MONGO_HOST:$MONGO_PORT/$MONGO_DB_NAME
-          export MONGO_DB_NAME=$MONGO_DB_NAME
-          export MONGO_USER=$MONGO_USER
-          export MONGO_PASS=$MONGO_PASS
-          export MONGO_HOST=$MONGO_HOST
-          export MONGO_PORT=$MONGO_PORT
-          export NAME_PG=$POSTGRES_DB
-          export USER_PG=$POSTGRES_USER
-          export PASSWORD_PG=$POSTGRES_PASSWORD
-          export HOST_PG=$POSTGRES_HOST
-          export PORT_PG=$POSTGRES_PORT
-      
 
-      - name: Wait for Postgres to be ready
+      - name: Debug environment variables
         run: |
-          until PGPASSWORD=$POSTGRES_PASSWORD pg_isready -h localhost -p 5432 -U $POSTGRES_USER; do
-            echo "Waiting for postgres..."
+          echo "POSTGRES_DB: $POSTGRES_DB"
+          echo "POSTGRES_USER: $POSTGRES_USER"
+          echo "MONGO_USER: $MONGO_USER"
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until PGPASSWORD=$POSTGRES_PASSWORD pg_isready -h 127.0.0.1 -p 5432 -U $POSTGRES_USER -d $POSTGRES_DB; do
+            echo "Waiting for PostgreSQL..."
             sleep 2
           done
 
@@ -76,7 +65,7 @@ jobs:
 
       - name: Wait for MongoDB to be ready
         run: |
-          until mongosh --host localhost --port 27017 -u $MONGO_USER -p $MONGO_PASS --authenticationDatabase admin --eval 'db.adminCommand("ping")'; do
+          until mongosh --host 127.0.0.1 --port 27017 -u $MONGO_USER -p $MONGO_PASS --authenticationDatabase admin --eval 'db.adminCommand("ping")'; do
             echo "Waiting for MongoDB..."
             sleep 2
           done
