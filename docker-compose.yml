@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
   mongodb:
     image: mongo:latest
@@ -17,6 +19,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
     ports:
       - "27017:27017"
+    volumes:  
+      - mongodb-data:/data/db
   web:
     build: .
     container_name: django_web
@@ -26,8 +30,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASS: ${MONGO_PASS}
+    command: bash -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:      
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - postgres
       - mongodb
+
+volumes:
+  db-data:
+  mongodb-data:
