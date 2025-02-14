@@ -7,7 +7,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST}
     ports:
       - "5432:5432"
     volumes:
@@ -18,7 +17,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-      MONGO_INITDB_ROOT_HOST: ${MONGO_HOST}
     ports:
       - "27017:27017"
     volumes:  
@@ -29,12 +27,12 @@ services:
       NAME_PG: ${POSTGRES_DB}
       USER_PG: ${POSTGRES_USER}
       PASSWORD_PG: ${POSTGRES_PASSWORD}
-      HOST_PG: postgres
+      HOST_PG: localhost
       PORT_PG: ${POSTGRES_PORT}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASS: ${MONGO_PASS}
       MONGO_DB_NAME: ${MONGO_DB_NAME}
-      MONGO_HOST: mongodb
+      MONGO_HOST: localhost
       MONGO_PORT: ${MONGO_PORT}
       
     command: bash -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
