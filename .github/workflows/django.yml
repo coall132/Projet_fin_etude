@@ -29,7 +29,7 @@ jobs:
       NAME_PG: ${{ secrets.POSTGRES_DB }}
       USER_PG: ${{ secrets.POSTGRES_USER }}
       PASSWORD_PG: ${{ secrets.POSTGRES_PASSWORD }}
-      HOST_PG: localhost
+      HOST_PG: postgres
       PORT_PG: ${{ secrets.MONGO_PORT }}
 
 
@@ -81,7 +81,7 @@ jobs:
         run: |
           cd autoML
           docker-compose run web python manage.py migrate
-          
+
       - name: Check PostgreSQL logs
         run: docker-compose logs postgres
       - name: Check MongoDB logs
