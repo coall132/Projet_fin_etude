@@ -96,5 +96,16 @@ jobs:
         run: |
           cd autoML 
           docker-compose run web python manage.py test
+      
+      - name: Wait for web server to be up
+        run: |
+          until curl -s localhost:8000; do
+            echo "Waiting for web server to be up..."
+            sleep 2
+          done
+      
+      - name: Access the site and perform tests (Example)
+        run: |
+          curl -s localhost:8000  # Check if site is up
 
     
