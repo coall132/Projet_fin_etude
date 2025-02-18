@@ -6,8 +6,8 @@ db.createUser({
   user: process.env.MONGO_USER,
   pwd: process.env.MONGO_PASS,
   roles: [
-    { role: 'readWrite', db: 'Auto_ML_V2' },
-    { role: 'dbAdmin', db: 'Auto_ML_V2' }
+    { role: 'readWrite', db: process.env.MONGO_INITDB_DATABASE },
+    { role: 'dbAdmin', db: process.env.MONGO_INITDB_DATABASE }
   ]
 });
 

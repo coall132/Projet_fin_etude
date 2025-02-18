@@ -5,6 +5,11 @@ import pandas as pd
 from pymongo import MongoClient
 from django.contrib.auth import get_user_model
 from .models import Project, Dataset
+from django.conf import settings
+from .forms import UploadFileForm
+import gridfs
+
+mongo_config = settings.MONGO_CONFIG
 
 # Utilisation de get_user_model pour obtenir le modèle utilisateur correct
 User = get_user_model()
@@ -21,13 +26,14 @@ def espace_personel(request):
 @login_required
 def liste_project(request):
     user = request.user
-    liste_project = list(Project.objects.filter(user=user).values_list('projet_name', flat=True)) 
+    dico_project = dict(Project.objects.filter(user=user).values_list('projet_name', 'id')) 
+    print(dico_project)
     if request.method == 'POST':
         action, projet = request.POST.get('action_liste_prj', None), request.POST.get('projet', None)
         if action == 'action1':
             Project.objects.get(user=user, projet_name=projet).delete()
-            liste_project = list(Project.objects.filter(user=user).values_list('projet_name', flat=True)) 
-    return render(request, 'liste_project.html', {'username': user.username, 'projects': liste_project,})
+            dico_project = dict(Project.objects.filter(user=user).values_list('projet_name', 'id'))
+    return render(request, 'liste_project.html', {'username': user.username, 'projects': dico_project,})
 
 @login_required
 def creer_project(request):
@@ -42,9 +48,33 @@ def creer_project(request):
     return redirect('liste_project')
 
 @login_required
-def project(request,project_name):
-    username=request.user.username
-    return render(request,'project.html',{'username':username,'project_name':project_name})
+def project(request,project_name,project_id):
+    user=request.user
+    return render(request,'project.html',{'username':user.username,'project_name':project_name,'project_id':project_id})
+
+@login_required
+def upload_csv(request,project_name,project_id):
+    task_id = request.session.get("task_id", None)
+    user=request.user
+    db,client = get_db_mongo(mongo_config["DB_NAME"],'mongodb',27017,mongo_config["USER"],mongo_config["PASSWORD"])
+    fs = gridfs.GridFS(db)
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']           
+            if Project.objects.get(user=user, projet_name=project_name):
+                if not Dataset.objects.filter(projet_id=project_id, dataset_name=csv_file.name).exists():
+                    file_id = fs.put(
+                        csv_file, 
+                        filename={'csv_file_name':csv_file.name,'username':user.username}, 
+                        metadata={"username": user.username,'filename':csv_file.name,'project_name':project_name},
+                        chunkSizeBytes=1048576 )
+        client.close()
+        return redirect('project',project_name,project_id)
+    else :
+        client.close()
+        form = UploadFileForm()
+        return redirect('project',project_name,project_id)
 
 class Df_perso:
     def __init__(self,df):

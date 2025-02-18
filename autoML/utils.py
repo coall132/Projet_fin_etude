@@ -1,9 +1,11 @@
 from pymongo import MongoClient
-def get_db_mongo(db_name, host, port, username, password):
-    client = MongoClient(host=host,
-                        port=int(port),
-                        username=username,
-                        password=password
-                        )
-    db_mongo = client[db_name]
-    return db_mongo, client
+
+def get_db_mongo(db_name, host, port, user, password):
+    try:
+        mongo_uri = f"mongodb://{user}:{password}@{host}:{port}/{db_name}?authSource={db_name}"
+        client = MongoClient(mongo_uri)
+        db = client[db_name]
+        return db, client
+    except Exception as e:
+        print(f"Erreur de connexion à MongoDB : {e}")
+        return None, None

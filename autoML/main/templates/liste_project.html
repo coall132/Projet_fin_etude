@@ -32,16 +32,16 @@
         <div >
             {% if projects %}
             <ul>
-                {% for project in projects %}
+                {% for project,id in projects.items %}
                     <div class="card-container">
                         <div class="card">
                             <header class="card-header header-img">
                                 <img src="https://bigmedia.bpifrance.fr/sites/default/files/styles/dossier_page/public/2024-08/Comment%20int%C3%A9grer%20l%27IA%20dans%20votre%20entreprise%20en%208%20%C3%A9tapes.png.webp?itok=UR-fuYVr" alt="">
-                                <p class="header-title">{{ project.nom_projet }}</p>
+                                <p class="header-title">{{ project }}</p>
                             </header>
                             <div class="card-body"></div>
                             <div class="card-footer">
-                                <button class="btn" onclick="window.location.href='{% url 'project' project_name=project %}'">Go</button>
+                                <button class="btn" onclick="window.location.href='{% url 'project' project_name=project project_id=id %}'">Go</button>
                                 <button class="btn delete-btn" data-projet="{{ project }}" name="action_liste_prj" value="action1">Delete le projet</button>
                             </div>
                         </div>
