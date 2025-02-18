@@ -67,7 +67,7 @@ jobs:
 
       - name: Wait for MongoDB to be ready
         run: |
-          until mongosh --host mongodb --port 27017 -u $MONGO_USER -p $MONGO_PASS --authenticationDatabase $MONGO_DB_NAME --eval 'db.adminCommand("ping")'; do
+          until mongosh --host localhost --port 27017 -u $MONGO_USER -p $MONGO_PASS --authenticationDatabase $MONGO_DB_NAME --eval 'db.adminCommand("ping")'; do
             echo "Waiting for MongoDB..."
             sleep 2
           done
