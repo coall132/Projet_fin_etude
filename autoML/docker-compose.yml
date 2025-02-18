@@ -14,15 +14,23 @@ services:
 
   mongodb:
     image: mongo:latest
+    command:
+      - --storageEngine
+      - wiredTiger
+      - --auth
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER_ADMIN}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS_ADMIN}
+      MONGO_INITDB_DATABASE: Auto_ML_V2
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASS: ${MONGO_PASS}
     ports:
       - "27017:27017"
-    volumes:  
+    volumes:
       - mongodb-data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: always
+
   web:
     build: .
     environment:
@@ -33,12 +41,13 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASS: ${MONGO_PASS}
+      MONGO_USER_ADMIN: ${MONGO_USER_ADMIN}
+      MONGO_PASS_ADMIN: ${MONGO_PASS_ADMIN}
       MONGO_DB_NAME: ${MONGO_DB_NAME}
-      MONGO_HOST: localhost
+      MONGO_HOST: mongodb
       MONGO_PORT: ${MONGO_PORT}
-      
-    command: bash -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    volumes:      
+    command: bash -c "./wait-for-it.sh postgres:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
       - .:/app
     ports:
       - "8000:8000"
