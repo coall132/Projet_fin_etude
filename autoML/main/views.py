@@ -49,8 +49,17 @@ def creer_project(request):
 
 @login_required
 def project(request,project_id):
-
-    return render(request,'project.html',{'project_id':project_id})
+    user = request.user
+    print('!!!!!!!!!!!!!!!!!!!!!!')
+    print(project_id)
+    test= Project.objects.get(user=user, project_id=project_id)
+    if Project.objects.filter(user=user, project_id=project_id).exists() :
+        try :
+            dict_dataset=dict(Dataset.objects.get( project_id=project_id).values_list('dataset_name', 'dataset_id')) 
+        except Exception as e:
+            dict_dataset=None
+            print(e)
+    return render(request,'project.html',{'project_id':project_id,"dict_dataset":dict_dataset})
 
 @login_required
 def upload_csv(request,project_id):
@@ -74,8 +83,7 @@ def upload_csv(request,project_id):
     else :
         client.close()
         form = UploadFileForm()
-    return redirect('project',project_id)
-
+    return redirect('liste_project')
 class Df_perso:
     def __init__(self,df):
         self.df=df.copy()

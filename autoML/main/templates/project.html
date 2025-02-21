@@ -44,13 +44,14 @@
             Voici les datasets du projets :
         </h2>
         <div >
-            {% if liste_dataset %}
+            {% if dict_dataset %}
             <form method="post" action="{% url 'project' project_id=project_id %}">
                 {% csrf_token %}
                 <label for="dataset-select">Choisissez un dataset :</label>
                 <select id="dataset-select" name="filename" required>
                     <option value="" disabled selected>-- Sélectionnez un dataset --</option>
-                    {% for filename in liste_dataset %}
+                    {% for filename,id in dict_dataset %}
+                        <input type="hidden" name="id_dataset" value="{{ id }}">
                         <option value="{{ filename }}">{{ filename }}</option>
                     {% endfor %}
                 </select>
