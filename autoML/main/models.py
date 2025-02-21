@@ -1,8 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 User = get_user_model()
+
+import uuid
+from django.conf import settings
+from django.db import models
 
 class Project(models.Model):
     """Table qui stocke les projets liés à un utilisateur"""
@@ -11,12 +16,12 @@ class Project(models.Model):
         on_delete=models.CASCADE, 
         related_name="projets"
     )
-    projet_name = models.CharField(max_length=255, unique=True)  # Champ de nom du projet
+    project_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False) 
+    project_name = models.CharField(max_length=255)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # L'unicité sur 'user' et 'projet_name' reste présente
-        unique_together = ('user', 'projet_name')  
+        unique_together = ('user', 'project_name')  # Empêche un même user d'avoir 2 projets du même nom
 
     def __str__(self):
         return self.projet_name
@@ -24,20 +29,20 @@ class Project(models.Model):
 
 class Dataset(models.Model):
     """Table qui stocke les datasets liés à un projet"""
-    projet = models.ForeignKey(
+    project_id = models.ForeignKey(  # Utilisation de projet_id pour correspondre
         Project, 
         on_delete=models.CASCADE, 
         related_name="datasets"
     )
-    dataset_name = models.CharField(max_length=255, unique=True)  # Champ de nom du dataset
+    dataset_name = models.CharField(max_length=255)  # Supprime l'unicité globale pour éviter les erreurs
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        # L'unicité sur 'projet' et 'dataset_name' reste présente
-        unique_together = ('projet', 'dataset_name')
+        unique_together = ('project_id', 'dataset_name')  
 
     def __str__(self):
-        return self.dataset_name
+        return f"{self.projet.project_name} - {self.dataset_name}"
+
 
 
 class Graphique(models.Model):

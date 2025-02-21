@@ -32,6 +32,6 @@ urlpatterns = [
     path('home/',autoML_views.espace_personel,name='perso'),
     path('home/project/',autoML_views.liste_project, name='liste_project'),
     path('home/creer_project/',autoML_views.creer_project, name='creer_project'),
-    path('home/project/<str:project_name>/<int:project_id>',autoML_views.project, name='project'), 
-    path('home/<str:project_name>/<int:project_id>/upload_csv/',autoML_views.upload_csv,name='upload_csv'),
+    path('home/project/<int:project_id>',autoML_views.project, name='project'), 
+    path('home/<int:project_id>/upload_csv/',autoML_views.upload_csv,name='upload_csv'),
 ]

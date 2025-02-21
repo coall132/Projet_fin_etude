@@ -25,7 +25,7 @@
             </a>
         </nav>
         <br><br>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_name project_id%}">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_id%}">
             {% csrf_token %}
             <label for="csv_file">Télécharger un fichier CSV :</label>
             <input type="file" id="csv_file" name="csv_file" accept=".csv">
@@ -45,7 +45,7 @@
         </h2>
         <div >
             {% if liste_dataset %}
-            <form method="post" action="{% url 'project' project_name=project_name %}">
+            <form method="post" action="{% url 'project' project_id=project_id %}">
                 {% csrf_token %}
                 <label for="dataset-select">Choisissez un dataset :</label>
                 <select id="dataset-select" name="filename" required>
