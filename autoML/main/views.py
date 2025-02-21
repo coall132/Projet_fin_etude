@@ -62,7 +62,7 @@ def upload_csv(request,project_id):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']   
-            projet_name=Project.objects.get(user=user, project_id=project_id).projet_name      
+            projet_name=Project.objects.get(user=user, project_id=project_id).project_name      
             if projet_name:
                 if not Dataset.objects.filter(project_id=project_id, dataset_name=csv_file.name).exists():
                     file_id = fs.put(
