@@ -50,9 +50,8 @@
                 <label for="dataset-select">Choisissez un dataset :</label>
                 <select id="dataset-select" name="filename" required>
                     <option value="" disabled selected>-- Sélectionnez un dataset --</option>
-                    {% for filename,id in dict_dataset %}
-                        <input type="hidden" name="id_dataset" value="{{ id }}">
-                        <option value="{{ filename }}">{{ filename }}</option>
+                    {% for filename,id in dict_dataset.items %}
+                        <option value="{{ id }}">{{ filename }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" name="action" value="action">Observer le dataset</button>

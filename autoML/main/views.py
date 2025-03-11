@@ -50,28 +50,26 @@ def creer_project(request):
 @login_required
 def project(request,project_id):
     user = request.user
-    print('!!!!!!!!!!!!!!!!!!!!!!')
-    print(project_id)
     test= Project.objects.get(user=user, project_id=project_id)
     if Project.objects.filter(user=user, project_id=project_id).exists() :
         try :
-            dict_dataset=dict(Dataset.objects.get( project_id=project_id).values_list('dataset_name', 'dataset_id')) 
+            dict_dataset = dict(Dataset.objects.filter(project_id=project_id).values_list('dataset_name', 'dataset_id'))
         except Exception as e:
             dict_dataset=None
-            print(e)
     return render(request,'project.html',{'project_id':project_id,"dict_dataset":dict_dataset})
 
 @login_required
 def upload_csv(request,project_id):
     task_id = request.session.get("task_id", None)
     user=request.user
-    db,client = get_db_mongo(mongo_config["DB_NAME"],'mongodb',27017,mongo_config["USER"],mongo_config["PASSWORD"])
+    db,client = get_db_mongo(mongo_config["DB_NAME"],mongo_config["HOST"],27017,mongo_config["USER"],mongo_config["PASSWORD"])
     fs = gridfs.GridFS(db)
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']   
-            projet_name=Project.objects.get(user=user, project_id=project_id).project_name      
+            projet_name=Project.objects.get(user=user, project_id=project_id).project_name  
+            project = Project.objects.get(user=user, project_id=project_id) 
             if projet_name:
                 if not Dataset.objects.filter(project_id=project_id, dataset_name=csv_file.name).exists():
                     file_id = fs.put(
@@ -79,11 +77,12 @@ def upload_csv(request,project_id):
                         filename={'csv_file_name':csv_file.name,'username':user.username}, 
                         metadata={"username": user.username,'filename':csv_file.name,'project_name':projet_name},
                         chunkSizeBytes=1048576 )
+                    Dataset.objects.create(project_id=project,dataset_name=csv_file.name,description=None)
         client.close()       
     else :
         client.close()
         form = UploadFileForm()
-    return redirect('liste_project')
+    return redirect('project',project_id)
 class Df_perso:
     def __init__(self,df):
         self.df=df.copy()
