@@ -27,9 +27,11 @@ def espace_personel(request):
 def liste_project(request):
     user = request.user
     dico_project = dict(Project.objects.filter(user=user).values_list('project_name', 'project_id')) 
-    print(dico_project)
     if request.method == 'POST':
         action, projet = request.POST.get('action_liste_prj', None), request.POST.get('projet', None)
+        print('!!!!!!!!!!!!')
+        print(projet)
+        print()
         if action == 'action1':
             Project.objects.get(user=user, project_id=projet).delete()
             dico_project = dict(Project.objects.filter(user=user).values_list('project_name', 'project_id'))
@@ -56,6 +58,13 @@ def project(request,project_id):
             dict_dataset = dict(Dataset.objects.filter(project_id=project_id).values_list('dataset_name', 'dataset_id'))
         except Exception as e:
             dict_dataset=None
+    if request.method == 'POST':
+        filename = request.POST.get('filename', None)
+        action = request.POST.get('action', None)
+        if action=="action" and filename : 
+            print('oui')
+            print(filename)
+
     return render(request,'project.html',{'project_id':project_id,"dict_dataset":dict_dataset})
 
 @login_required
@@ -72,27 +81,27 @@ def upload_csv(request,project_id):
             project = Project.objects.get(user=user, project_id=project_id) 
             if projet_name:
                 if not Dataset.objects.filter(project_id=project_id, dataset_name=csv_file.name).exists():
+                    dataset=Dataset.objects.create(project_id=project,dataset_name=csv_file.name,description=None)
                     file_id = fs.put(
                         csv_file, 
-                        filename={'csv_file_name':csv_file.name,'username':user.username}, 
-                        metadata={"username": user.username,'filename':csv_file.name,'project_name':projet_name},
+                        filename={'csv_file_name':csv_file.name,'username':user.username,'id_file':dataset.dataset_id}, 
+                        metadata={"username": user.username,'filename':csv_file.name,'project_name':projet_name,'id_file':dataset.dataset_id},
                         chunkSizeBytes=1048576 )
-                    Dataset.objects.create(project_id=project,dataset_name=csv_file.name,description=None)
         client.close()       
     else :
         client.close()
         form = UploadFileForm()
     return redirect('project',project_id)
+
 class Df_perso:
     def __init__(self,df):
-        self.df=df.copy()
+        self.user=df.copy()
     def info_df(self):
         self.ligne = self.df.shape[0]
         self.colonne = self.df.shape[1]
         self.nb_nul = self.df.isnull().sum().to_frame().to_html()
         self.nb_colonne_double = self.df.duplicated().sum()
-        return {'ligne':self.ligne,'colonne':self.colonne,
-                'nb_nul':self.nb_nul,'nb_colonne_double':self.nb_colonne_double}
+        return self.ligne,self.colonne,self.nb_nul,self.nb_colonne_double
     def magic_clean(self):
         for col in self.df.select_dtypes(include=['object']).columns:
             self.df[col] = self.df[col].astype(str).str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
