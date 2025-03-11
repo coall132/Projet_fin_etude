@@ -47,7 +47,19 @@ jobs:
 
       - name: Start PostgreSQL and MongoDB with Docker Compose
         run: |
-          cd autoML  # Aller dans le bon répertoire
+          cd autoML
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+          POSTGRES_HOST=postgres \
+          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} \
+          MONGO_USER=${{ secrets.MONGO_USER }} \
+          MONGO_PASS=${{ secrets.MONGO_PASS }} \
+          MONGO_USER_ADMIN=${{ secrets.MONGO_USER_ADMIN }} \
+          MONGO_PASS_ADMIN=${{ secrets.MONGO_PASS_ADMIN }} \
+          MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
+          MONGO_HOST=${{ secrets.MONGO_HOST }} \
+          MONGO_PORT=${{ secrets.MONGO_PORT }} \
           docker-compose up -d --build
           docker-compose ps
 
