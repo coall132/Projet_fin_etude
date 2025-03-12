@@ -8,6 +8,10 @@ from .models import Project, Dataset
 from django.conf import settings
 from .forms import UploadFileForm
 import gridfs
+from pyspark.sql import SparkSession
+import os
+import uuid 
+from io import BytesIO
 
 mongo_config = settings.MONGO_CONFIG
 
@@ -29,9 +33,6 @@ def liste_project(request):
     dico_project = dict(Project.objects.filter(user=user).values_list('project_name', 'project_id')) 
     if request.method == 'POST':
         action, projet = request.POST.get('action_liste_prj', None), request.POST.get('projet', None)
-        print('!!!!!!!!!!!!')
-        print(projet)
-        print()
         if action == 'action1':
             Project.objects.get(user=user, project_id=projet).delete()
             dico_project = dict(Project.objects.filter(user=user).values_list('project_name', 'project_id'))
@@ -53,6 +54,7 @@ def creer_project(request):
 def project(request,project_id):
     user = request.user
     test= Project.objects.get(user=user, project_id=project_id)
+    storage = Storage_df()
     if Project.objects.filter(user=user, project_id=project_id).exists() :
         try :
             dict_dataset = dict(Dataset.objects.filter(project_id=project_id).values_list('dataset_name', 'dataset_id'))
@@ -62,9 +64,9 @@ def project(request,project_id):
         filename = request.POST.get('filename', None)
         action = request.POST.get('action', None)
         if action=="action" and filename : 
-            print('oui')
-            print(filename)
-
+            df = find_df(user.username,int(filename),test.project_name)
+            id_df = storage.save(df)
+            print(id_df)
     return render(request,'project.html',{'project_id':project_id,"dict_dataset":dict_dataset})
 
 @login_required
@@ -92,6 +94,44 @@ def upload_csv(request,project_id):
         client.close()
         form = UploadFileForm()
     return redirect('project',project_id)
+
+def find_df(username,file_id,project_name):
+    db, client = get_db_mongo(mongo_config["DB_NAME"],mongo_config["HOST"],27017,mongo_config["USER"],mongo_config["PASSWORD"])
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.id_file': file_id,'metadata.project_name':project_name})
+    if grid_out:
+        file_data = BytesIO(grid_out.read())
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+        return df
+
+class Storage_df:
+    def __init__(self,storage_dir="spark_dataframes"):
+        self.storage_dir = storage_dir
+        os.makedirs(storage_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
+        self.spark = SparkSession.builder.appName("SparkDataFrameStorage").master("local[*]").config("spark.driver.memory", "8g").config("spark.executor.memory", "16g").config("spark.sql.shuffle.partitions", "400").getOrCreate()
+    def save(self,df):
+        if isinstance(df, pd.DataFrame):  # Vérifie si c'est un DataFrame Pandas
+            df = self.spark.createDataFrame(df)
+        df_id = str(uuid.uuid4())  # Génère un ID unique
+        file_path = os.path.join(self.storage_dir, df_id)
+        df.write.parquet(file_path, mode="overwrite")  # Écrit en format Parquet
+        print(f"✅ DataFrame enregistré sous l'ID: {df_id}")
+        return df_id
+    def load(self, df_id):
+        """Charge un DataFrame Spark à partir de son ID."""
+        file_path = os.path.join(self.storage_dir, df_id)
+        if os.path.exists(file_path):
+            df = self.spark.read.parquet(file_path)
+            print(f"✅ DataFrame chargé avec succès (ID: {df_id})")
+            return df
+        else:
+            print(f"❌ Aucune donnée trouvée pour l'ID: {df_id}")
+            return None
+    def list_files(self):
+        """Liste tous les fichiers enregistrés."""
+        return [f for f in os.listdir(self.storage_dir) if os.path.isdir(os.path.join(self.storage_dir, f))]
+
+
 
 class Df_perso:
     def __init__(self,df):
